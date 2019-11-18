@@ -1,0 +1,28 @@
+This set of code is to help you to generate cosmic ray flux based on EXPACS library
+
+EXPACS is an excel based program which cannot be easily be incorporated in C++/python
+
+There is a fortran version of EXPACS which can be downloaded from their webpage
+
+The number following 'python runFlux.py' command tells the program about the particle whose flux is sought. For example, 1 is proton
+
+If you would like to generate the cosmic fluc, say of proton, for various energies at different latitudes, longitudes and at different altitudes - up to 86 km of atmosphere, then this package may be used. The use of nested for loops is reduced by taking advntage of python's multiprocessing library
+
+The program is run in a brute force manner:
+	- you need to run them in an SLURM-based HPC framework
+	- all the CPU cores of one node is used.
+	- the python program uses itertools to multiprocess the nested for loop
+	- it calls the FluxTest.sh file with all necessary arguments
+	- this shell script uses those arguments to configure the main-simple.f90 and the subroutines.f90 fortran codes
+	- hence EXPACS is compiled for the specific configuration and has a unique job-id
+	- the executables prepared thereof don't mix - as they are all tagged with the specific job ids
+	- the numbers are dumped to a text file
+	- the python program reads off the number from the file and puts into an array (it is tempting to put them into a list, but that leads to difficulty in interpolation and increses the output file size)
+	- the shell script cleans up the executable and the text file before finishing
+
+Pros:
+	- Something which may take really long time, can be done in very small time. For 48 core CPUs, you may get a speed up beyond expectation
+
+Cons:
+	- Don't run the code-system simultaneously for different particles at the same time. Even if they are running in different nodes, they slow down each other.
+	- Ideally, it is not good to compile the code every time we need a configuration. 
